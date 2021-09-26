@@ -31,9 +31,7 @@
     const headerUnit = 'AdThrive_Header';
     const contentUnit = 'AdThrive_Content';
     const adUnit = 'test';
-
-    const testSlot = '/6355419/Travel/Europe/France/Paris';
-
+    
     const generateSlot = (parentUnit, index = 1) => {
       return `/${networkCode}/${parentUnit}_${index}/${adUnit}`
     };
@@ -44,11 +42,6 @@
     var googletag = googletag || {};
     googletag.cmd = googletag.cmd || [];
 
-    // TODO
-    // 2. FIGURE OUT WHY MORE THAN ONE AD WON'T LOAD
-    // 3. FIX ad-loader.js RACE CONDITION
-    // 4. DOUBLE CHECK SIZING
-    // 5. DOUBLE CHECK 2 AND 4 WITH BRANDON
     googletag.cmd.push(() => {
       const headerMapping = googletag.sizeMapping()
         .addSize([0, 0], [320, 50])
@@ -62,16 +55,6 @@
       googletag.defineSlot(generateSlot(headerUnit), [[320, 50]], 'header-ad')
         .defineSizeMapping(headerMapping)
         .addService(googletag.pubads());
-
-      // googletag.defineSlot(testSlot, [320, 50], 'header-ad')
-      //   .defineSizeMapping(headerMapping)
-      //   .addService(googletag.pubads());
-      //
-      // for (let i = 1; i < 10; i++) {
-      //   googletag.defineSlot(testSlot, [[320, 50], [320, 250]], `content-ad-${i}`)
-      //   .defineSizeMapping(contentMapping)
-      //   .addService(googletag.pubads());
-      // }
 
       for (var i = 1; i < 10; i++) {
         googletag.defineSlot(generateSlot(contentUnit, i), [[320, 50], [320, 250]], `content-ad-${i}`)
@@ -113,7 +96,7 @@
         const paragraph = paragraphs[i];
         const imageChildren = paragraph.getElementsByTagName('img').length;
 
-        // Used to prevent too many ads from appearing on screen at a time
+        // Used to prevent too many ads from appearing on screen at a time (assigns window.innerHeight upon ad placement)
         if (heightLeftBeforeNextChild > 0) {
           heightLeftBeforeNextChild -= paragraph.offsetHeight;
           if (heightLeftBeforeNextChild < 0) {
