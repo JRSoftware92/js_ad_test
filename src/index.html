@@ -32,6 +32,12 @@
     const contentUnit = 'AdThrive_Content';
     const adUnit = 'test';
 
+    const contentMax = 9;
+    let contentCount = 1;
+
+    const googletag = googletag || {};
+    googletag.cmd = googletag.cmd || [];
+
     const generateSlot = (parentUnit, index = 1) => {
       return `/${networkCode}/${parentUnit}_${index}/${adUnit}`
     };
@@ -61,7 +67,7 @@
       }
     };
 
-    const definedAdSlots = () => {
+    const defineAdSlots = () => {
       const headerMapping = getHeaderSizeMapping();
       const contentMapping = getContentSizeMapping();
 
@@ -127,14 +133,8 @@
       }
     };
 
-    const contentMax = 9;
-    let contentCount = 1;
-
-    var googletag = googletag || {};
-    googletag.cmd = googletag.cmd || [];
-
     googletag.cmd.push(() => {
-      definedAdSlots()
+      defineAdSlots()
       configureGPTSettings();
       googletag.enableServices();
     });
