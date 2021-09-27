@@ -36,59 +36,63 @@
       return `/${networkCode}/${parentUnit}_${index}/${adUnit}`
     };
 
-    const contentMax = 9;
-    let contentCount = 1;
+    const getHeaderSizeMapping = () => googletag.sizeMapping()
+            .addSize([0, 0], [320, 50])
+            .addSize([1000, 0], [728, 90])
+            .build();
 
-    var googletag = googletag || {};
-    googletag.cmd = googletag.cmd || [];
+    const getContentSizeMapping = () => googletag.sizeMapping()
+            .addSize([0, 0], [320, 50], [320, 250])
+            .build();
 
-    googletag.cmd.push(() => {
-      const headerMapping = googletag.sizeMapping()
-        .addSize([0, 0], [320, 50])
-        .addSize([1000, 0], [728, 90])
-        .build();
+    const defineSlot = ({ adUnit, dimens, adId, sizeMapping }) => {
+      googletag.defineSlot(adUnit, dimens, adId)
+              .defineSizeMapping(sizeMapping)
+              .addService(googletag.pubads());
+    };
 
-      const contentMapping = googletag.sizeMapping()
-        .addSize([0, 0], [320, 50], [320, 250])
-        .build();
-
-      googletag.defineSlot(generateSlot(headerUnit), [[320, 50]], 'header-ad')
-        .defineSizeMapping(headerMapping)
-        .addService(googletag.pubads());
-
-      for (var i = 1; i < 10; i++) {
-        googletag.defineSlot(generateSlot(contentUnit, i), [[320, 50], [320, 250]], `content-ad-${i}`)
-        .defineSizeMapping(contentMapping)
-        .addService(googletag.pubads());
+    const waitAndUnfixHeaderOnEvent = (event, timeToWait = 500) => {
+      const slotId = event.slot.getSlotElementId();
+      if (slotId === 'header-ad') {
+        setTimeout(() => {
+          const header = document.getElementById('header-ad');
+          header.classList.remove('fix-to-top');
+        }, timeToWait);
       }
+    };
 
+    const definedAdSlots = () => {
+      const headerMapping = getHeaderSizeMapping();
+      const contentMapping = getContentSizeMapping();
+
+      defineSlot({
+        adId: 'header-ad',
+        adUnit: generateSlot(headerUnit),
+        dimens: [[320, 50]],
+        sizeMapping: headerMapping,
+      });
+
+      for (let i = 1; i < 10; i++) {
+        defineSlot({
+          adId: `content-ad-${i}`,
+          adUnit: generateSlot(contentUnit, i),
+          dimens: [[320, 50], [320, 250]],
+          sizeMapping: contentMapping,
+        });
+      }
+    };
+
+    const configureGPTSettings = () => {
       googletag.pubads().setTargeting('siteId', 'test');
       googletag.pubads().enableSingleRequest();
 
-      googletag.pubads().addEventListener('slotRenderEnded', (event) => {
-        const slotId = event.slot.getSlotElementId();
-        if (slotId === 'header-ad') {
-          setTimeout(() => {
-            const header = document.getElementById('header-ad');
-            header.classList.remove('fix-to-top');
-          }, 500);
-        }
-      });
-
+      googletag.pubads().addEventListener('slotRenderEnded', waitAndUnfixHeaderOnEvent);
       googletag.pubads().addEventListener('impressionViewable', (event) => {
-        const slotId = event.slot.getSlotElementId();
-        if (slotId === 'header-ad') {
-          setTimeout(() => {
-            const header = document.getElementById('header-ad');
-            header.classList.remove('fix-to-top');
-          }, 200);
-        }
+        waitAndUnfixHeaderOnEvent(event, 200);
       });
+    };
 
-      googletag.enableServices();
-    });
-
-    window.addEventListener('DOMContentLoaded', () => {
+    const injectAdsIntoDOM = () => {
       const paragraphs = Array.from(document.getElementsByTagName('p'));
 
       let heightLeftBeforeNextChild = 0;
@@ -121,7 +125,21 @@
           heightLeftBeforeNextChild = window.innerHeight;
         }
       }
+    };
+
+    const contentMax = 9;
+    let contentCount = 1;
+
+    var googletag = googletag || {};
+    googletag.cmd = googletag.cmd || [];
+
+    googletag.cmd.push(() => {
+      definedAdSlots()
+      configureGPTSettings();
+      googletag.enableServices();
     });
+
+    window.addEventListener('DOMContentLoaded', injectAdsIntoDOM);
   </script>
 </head>
 <body>
